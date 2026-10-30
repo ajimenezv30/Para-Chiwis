@@ -1,0 +1,508 @@
+/* =========================
+   COLORES
+   (si querés ajustar el tono, se cambia todo desde aquí)
+========================= */
+
+:root {
+    --fondo-claro: #fcf1f3;     /* rosita casi blanco */
+    --fondo-medio: #f6e2e7;     /* rosita empolvado */
+    --texto: #4a2234;           /* ciruela oscuro */
+    --texto-suave: #8c5b6c;     /* malva */
+    --acento: #c27a94;          /* rosa de las flores */
+    --linea: rgba(74, 34, 52, 0.35);
+}
+
+
+/* =========================
+   CONFIGURACIÓN GENERAL
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    background: var(--fondo-claro);
+    color: var(--texto);
+    font-family: Georgia, "Times New Roman", serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Mientras se abre la carta no se puede hacer scroll
+   (script.js quita esta clase al terminar la transición) */
+body.abriendo {
+    overflow: hidden;
+}
+
+
+/* =========================
+   FONDO CON FLORES
+   Queda fijo mientras se baja por la carta.
+   "multiply" hace que lo blanco de la imagen se funda con el rosita.
+========================= */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(
+            ellipse 90% 60% at 50% 45%,
+            rgba(255, 255, 255, 0.7),
+            transparent 75%
+        ),
+        linear-gradient(
+            180deg,
+            var(--fondo-claro) 0%,
+            var(--fondo-medio) 100%
+        );
+}
+
+.fondo-flores {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+
+    background-image: url("fotos/flores.jpg");
+    background-repeat: no-repeat;
+    background-size: min(125vw, 900px) auto;
+    background-position: center 4%;
+
+    mix-blend-mode: multiply;
+    transition: opacity 1.6s ease;
+}
+
+/* En la carta las flores se suavizan para que el texto se lea bien */
+.fondo-flores.suave {
+    opacity: 0.28;
+}
+
+
+/* =========================
+   LUCITAS
+========================= */
+
+#lucitas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Todo el contenido va por encima de las lucitas */
+#portada,
+#carta {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* =========================
+   PORTADA
+========================= */
+
+.pantalla {
+    min-height: 100vh;
+    min-height: 100svh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    /* deja espacio arriba para las flores */
+    padding-top: clamp(140px, 28vw, 260px);
+}
+
+
+.contenido-portada {
+    width: 90%;
+    max-width: 500px;
+
+    animation: aparecer 2s ease forwards;
+}
+
+
+/* pequeño texto superior */
+
+.pequeno {
+    font-family: Arial, sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.35rem;
+    color: var(--acento);
+    margin-bottom: 30px;
+}
+
+
+/* título */
+
+h1 {
+    font-size: clamp(3.5rem, 15vw, 6rem);
+    font-weight: normal;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    margin-bottom: 30px;
+    color: var(--texto);
+}
+
+
+/* fecha */
+
+.fecha {
+    font-family: Arial, sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.3rem;
+    color: var(--texto-suave);
+    margin-bottom: 50px;
+}
+
+
+/* =========================
+   BOTÓN
+========================= */
+
+button {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid var(--linea);
+    color: var(--texto);
+    padding: 16px 28px;
+    border-radius: 40px;
+    font-family: Arial, sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    /* Brillo muy suave que "respira" para invitar a tocarlo */
+    animation: respirar 4s ease-in-out 2.5s infinite;
+
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease,
+        border-color 0.3s ease;
+}
+
+button:hover {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: var(--acento);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+
+/* =========================
+   SALIDA DE LA PORTADA
+   Cada elemento se va hacia arriba con un leve desenfoque,
+   de abajo hacia arriba (primero el botón, al final "PARA CHIWIS")
+========================= */
+
+.portada-saliendo .contenido-portada {
+    animation: none;
+}
+
+.portada-saliendo .contenido-portada > * {
+    opacity: 0;
+    transform: translateY(-14px);
+    filter: blur(6px);
+    transition:
+        opacity 0.9s ease,
+        transform 0.9s ease,
+        filter 0.9s ease;
+}
+
+.portada-saliendo button         { transition-delay: 0s; animation: none; }
+.portada-saliendo .fecha         { transition-delay: 0.1s; }
+.portada-saliendo h1             { transition-delay: 0.2s; }
+.portada-saliendo .pequeno       { transition-delay: 0.3s; }
+
+
+/* =========================
+   TRANSICIÓN — TELÓN DE LUZ
+   1) la pantalla se cubre de un rosita muy claro
+   2) aparece una línea fina de luz rosa en el centro
+   3) se abre hacia arriba y abajo mostrando la carta
+========================= */
+
+.velo {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.velo.activo {
+    visibility: visible;
+}
+
+.velo-mitad {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50.5%;
+    background: var(--fondo-claro);
+    opacity: 0;
+    transition:
+        opacity 0.9s ease,
+        transform 1.5s cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+.velo-superior { top: 0; }
+.velo-inferior { bottom: 0; }
+
+.velo-luz {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 78vw;
+    max-width: 520px;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--acento) 30%,
+        #a85676 50%,
+        var(--acento) 70%,
+        transparent
+    );
+    box-shadow:
+        0 0 14px rgba(194, 122, 148, 0.55),
+        0 0 40px rgba(194, 122, 148, 0.3);
+    transform: translate(-50%, -50%) scaleX(0);
+    transition:
+        transform 1.2s ease 0.5s,
+        opacity 0.8s ease;
+}
+
+/* Fase 1 */
+.velo.activo .velo-mitad { opacity: 1; }
+.velo.activo .velo-luz   { transform: translate(-50%, -50%) scaleX(1); }
+
+/* Fase 2 */
+.velo.abrir .velo-superior { transform: translateY(-100%); }
+.velo.abrir .velo-inferior { transform: translateY(100%); }
+.velo.abrir .velo-luz {
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+
+/* =========================
+   CARTA
+========================= */
+
+.seccion-carta {
+    width: 90%;
+    max-width: 680px;
+    margin: auto;
+    padding: 100px 0 120px 0;
+    font-size: 1.08rem;
+    line-height: 1.9;
+    color: var(--texto);
+}
+
+
+/* fecha de la carta */
+
+.fecha-carta {
+    font-family: Arial, sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2rem;
+    color: var(--acento);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+
+/* título */
+
+.seccion-carta h2 {
+    font-size: 3rem;
+    font-weight: normal;
+    margin-bottom: 60px;
+}
+
+
+/* párrafos */
+
+.seccion-carta p {
+    margin-bottom: 30px;
+}
+
+
+/* partes importantes */
+
+.especial {
+    text-align: center;
+    font-size: 1.3rem;
+    margin-top: 55px;
+    margin-bottom: 55px;
+    color: #7a3552;
+}
+
+
+/* firma */
+
+.firma {
+    margin-top: 70px;
+    text-align: right;
+    font-style: italic;
+    font-size: 1.2rem;
+}
+
+
+/* =========================
+   FINAL
+========================= */
+
+.final {
+    min-height: 80vh;
+    min-height: 80svh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+    padding: 50px 20px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255, 255, 255, 0.55),
+            transparent 60%
+        );
+
+    font-size: 1.5rem;
+}
+
+
+.corazon {
+    font-size: 3rem;
+    margin-top: 30px;
+}
+
+/* El corazón empieza a latir cuando ya apareció */
+.corazon.visible {
+    animation: latido 1.5s 1.4s infinite;
+}
+
+
+/* =========================
+   APARICIÓN SUAVE DE LOS TEXTOS
+   (script.js les pone la clase "revelar" automáticamente)
+========================= */
+
+.revelar {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+    transition:
+        opacity 1.4s ease,
+        transform 1.4s ease,
+        filter 1.4s ease;
+}
+
+.revelar.visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+
+/* =========================
+   ANIMACIONES
+========================= */
+
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+@keyframes latido {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+
+@keyframes respirar {
+    0%, 100% { box-shadow: 0 0 0 rgba(194, 122, 148, 0); }
+    50%      { box-shadow: 0 0 22px rgba(194, 122, 148, 0.25); }
+}
+
+
+/* =========================
+   OCULTAR CARTA
+========================= */
+
+.oculto {
+    display: none;
+}
+
+
+/* =========================
+   CELULAR
+========================= */
+
+@media (max-width: 600px) {
+
+    .seccion-carta {
+        width: 86%;
+        padding-top: 80px;
+        font-size: 1.03rem;
+        line-height: 1.85;
+    }
+
+    .seccion-carta h2 {
+        font-size: 2.5rem;
+        margin-bottom: 50px;
+    }
+
+    .especial {
+        font-size: 1.2rem;
+    }
+}
+
+
+/* =========================
+   "REDUCIR MOVIMIENTO" ACTIVADO EN EL CELULAR
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.3s !important;
+        transition-delay: 0s !important;
+    }
+    .revelar {
+        transform: none;
+        filter: none;
+    }
+}
